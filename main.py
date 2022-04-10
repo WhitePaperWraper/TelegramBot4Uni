@@ -1,5 +1,5 @@
 import logging
-import token
+import tokenOfTheBot
 
 from datetime import datetime
 import random
@@ -181,7 +181,7 @@ def main():
 
 if __name__ == "__main__":
 	if t_o_k_e_n is None:
-		t_o_k_e_n = token.token
+		t_o_k_e_n = tokenOfTheBot.token
 	if enable_logging:
 		logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
 		logger = logging.getLogger(__name__)
