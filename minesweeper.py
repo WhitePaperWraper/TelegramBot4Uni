@@ -156,7 +156,7 @@ class Minesweeper:
 							board[c_x + 1][c_y].plus()
 
 				#################################FUCKING ATROCIOUS###########################################
-
+				#################################NEEDS TO BE REDONE##########################################
 				c_y += 1
 			c_x += 1
 		self.board = board
@@ -223,39 +223,23 @@ class Minesweeper:
 					[0, 1, 1, 1, 0],
 					[0, 1, 0, 1, 0],
 					[0, 1, 1, 1, 0]]}
-		SCALE = 1
-		BORDER = 1
+		scale = 1
+		border = 1
 
 		for line in self.board: # x ++
 			loc_x = enumerate(line)
 			for cell in line: # y ++
+				id = 11
 				loc_y = enumerate(cell)
 				if cell.is_open:
-					if cell.is_mine:
-						pass # 13
-					match cell.num:
-						case 0:
-							pass
-						case 1:
-							pass
-						case 2:
-							pass
-						case 3:
-							pass
-						case 4:
-							pass
-						case 5:
-							pass
-						case 6:
-							pass
-						case 7:
-							pass
-						case 8 :
-							pass
+					if cell.is_mine: #after game over only
+						id = 13
+					id = cell.num
 				elif cell.is_marked:
-					pass  # 12
+					id = 12
 				else:
-					pass #10
+					id = 10
+				#at this point I know what cell would look like (id) and where i is (loc_x, loc_x)
 
 	def game_start(self, x: int, y: int, mines):
 		self.generate_board(x, y, mines)
@@ -264,6 +248,10 @@ class Minesweeper:
 
 	def gameover(self):
 		self.times_lost += 1
+		for line in self.board: # open all cells with mines
+			for cell in line:
+				if cell.is_mine:
+					cell.open()
 		self.is_ongoing = False
 		pass
 
