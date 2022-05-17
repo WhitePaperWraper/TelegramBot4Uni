@@ -102,61 +102,45 @@ class Minesweeper:
 			c_y = 0
 			while c_y < inp_y:
 				if board[c_x][c_y].is_mine:
-					if c_x + 1 <= inp_x & c_x & c_y & c_y + 1 <= inp_y:
-						board[c_x - 1][c_y - 1].plus()
-						board[c_x - 1][c_y].plus()
-						board[c_x - 1][c_y + 1].plus()
-						board[c_x][c_y - 1].plus()
-						board[c_x][c_y + 1].plus()
-						board[c_x + 1][c_y - 1].plus()
-						board[c_x + 1][c_y].plus()
-						board[c_x + 1][c_y + 1].plus()
-					else:
-						if c_x:  # if cell is near left wall
-							if c_y:
-								board[c_x][c_y + 1].plus()
-								board[c_x + 1][c_y].plus()
-								board[c_x + 1][c_y + 1].plus()
-							elif c_y + 1 <= inp_y:
-								board[c_x + 1][c_y - 1].plus()
-								board[c_x + 1][c_y].plus()
-								board[c_x][c_y - 1].plus()
-							else:
-								board[c_x + 1][c_y - 1].plus()
-								board[c_x + 1][c_y].plus()
-								board[c_x + 1][c_y + 1].plus()
-								board[c_x][c_y - 1].plus()
-								board[c_x][c_y + 1].plus()
-						elif c_x + 1 <= inp_x:  # if cell is near right wall, just replace + with minus
-							if c_y:
-								board[c_x][c_y + 1].plus()
-								board[c_x - 1][c_y].plus()
-								board[c_x - 1][c_y + 1].plus()
-							elif c_y + 1 <= inp_y:
-								board[c_x - 1][c_y - 1].plus()
-								board[c_x - 1][c_y].plus()
-								board[c_x][c_y - 1].plus()
-							else:
-								board[c_x - 1][c_y - 1].plus()
-								board[c_x - 1][c_y].plus()
-								board[c_x - 1][c_y + 1].plus()
-								board[c_x][c_y - 1].plus()
-								board[c_x][c_y + 1].plus()
-						elif c_y:  # not near wall but near top/bottom
-							board[c_x - 1][c_y].plus()
-							board[c_x - 1][c_y + 1].plus()
-							board[c_x][c_y + 1].plus()
-							board[c_x + 1][c_y].plus()
-							board[c_x + 1][c_y + 1].plus()
-						else:  # near the other wall
-							board[c_x - 1][c_y - 1].plus()
-							board[c_x - 1][c_y].plus()
-							board[c_x][c_y - 1].plus()
-							board[c_x + 1][c_y - 1].plus()
-							board[c_x + 1][c_y].plus()
+					#0 1  2  3 <-x
+					#1[0][1][2]
+					#2[3][#][4]
+					#3[5][6][7]
+					exists = [true,true,true,true,true,true,true,true]
+					if c_x: # if cell is near left wall e.g. x equal = 0
+						exists[0] = false
+						exists[3] = false
+						exists[5] = false
+					if c_y: # if y = 0
+						exists[0] = false
+						exists[1] = false
+						exists[2] = false
+					if c_x + 1>inp_x: # if y = 0
+						exists[2] = false
+						exists[4] = false
+						exists[7] = false
+					if c_y + 1>inp_y: # if
+						exists[5] = false
+						exists[6] = false
+						exists[7] = false
 
-				#################################FUCKING ATROCIOUS###########################################
-				#################################NEEDS TO BE REDONE##########################################
+					if exists[0]:
+						board[c_x - 1][c_y - 1].plus()
+					if exists[1]:
+						board[c_x][c_y - 1].plus()
+					if exists[2]:
+						board[c_x + 1][c_y - 1].plus()
+					if exists[3]:
+						board[c_x - 1][c_y].plus()
+					if exists[4]:
+						board[c_x + 1][c_y].plus()
+					if exists[5]:
+						board[c_x - 1][c_y + 1].plus()
+					if exists[6]:
+						board[c_x][c_y + 1].plus()
+					if exists[7]:
+						board[c_x + 1][c_y + 1].plus()
+					#############################
 				c_y += 1
 			c_x += 1
 		self.board = board
