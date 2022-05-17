@@ -9,7 +9,10 @@ from telegram.ext import Updater, CommandHandler, CallbackContext, MessageHandle
 from PIL import Image
 from io import BytesIO
 
+import urllib.request, json
+
 t_o_k_e_n = None
+cat_api_token = None
 
 enable_logging = False
 
@@ -60,7 +63,8 @@ def start(update: Update, context: CallbackContext) -> None:
 	update.message.reply_text(
 		"Hi! I'm a prototype. Here are some commands I understand:\n"
 		"1. /start - Show this message\n"
-		"2. /help - Help on usage")
+		"2. /help - Help on usage\n0"
+		"3. /cat - for a cat")
 
 
 def he_p(update: Update, context: CallbackContext):
@@ -74,6 +78,11 @@ def he_p(update: Update, context: CallbackContext):
 		" /webp - Convert picture to WEBP\n")
 	pass
 
+def cat(update: Update, context: CallbackContext):
+	with urllib.request.urlopen("https://api.thecatapi.com/v1/images/search") as link:
+		response = json.loads(link.read().decode())
+	#print(response)
+	update.message.reply_photo(response[0]['url'])
 
 ################################ images handling ############################
 ######### save/load #########
@@ -99,7 +108,6 @@ def handle_message_other(update: Update, context: CallbackContext):
 		else:
 			update.message.reply_text("File type not recognized, try sending as picture")
 	message_text = update.message.text.lower()
-	message_text
 	if message_text.__contains__('roll'):
 		update.message.reply_text(roll(message_text))
 		return
@@ -162,6 +170,7 @@ def to_png(update: Update, context: CallbackContext):
 def handlers_setup(dispatcher: Updater.dispatcher):
 	dispatcher.add_handler(CommandHandler("start", start))
 	dispatcher.add_handler(CommandHandler("help", he_p))
+	dispatcher.add_handler(CommandHandler("cat", cat))
 	dispatcher.add_handler(CommandHandler("png", to_png))
 	dispatcher.add_handler(CommandHandler("jpg", to_jpg))
 	dispatcher.add_handler(CommandHandler("webp", to_webp))
@@ -182,6 +191,8 @@ def main():
 if __name__ == "__main__":
 	if t_o_k_e_n is None:
 		t_o_k_e_n = tokenOfTheBot.token
+	if cat_api_token is None:
+		cat_api_token = tokenOfTheBot.cat_api
 	if enable_logging:
 		logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
 		logger = logging.getLogger(__name__)

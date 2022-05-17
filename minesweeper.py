@@ -1,6 +1,6 @@
 from datetime import datetime
 import random
-from PIL import ImageDraw
+from PIL import Image, ImageDraw
 
 def gen_rand_int(min_val: int, max_val: int):
 	random.seed(datetime.now())
@@ -53,9 +53,6 @@ class Minesweeper:
 		else:
 			return self.times_won
 
-	def print_board(self):
-		pass
-
 	@staticmethod
 	def generate_mines(size_x: int, size_y: int, amnt: int):
 		def gen_mine(max_x, max_y):
@@ -91,7 +88,7 @@ class Minesweeper:
 		while c_x < inp_x:
 			c_y = 0
 			while c_y < inp_y:
-				board[c_x][c_y] = self.Cell([c_x, c_y] in mine_list)
+				board[c_x][c_y] = self.Cell([c_x, c_y] in mine_list)#passing bool, setting cell as mine or as empty
 				c_y += 1
 			c_x += 1
 		############
@@ -106,23 +103,23 @@ class Minesweeper:
 					#1[0][1][2]
 					#2[3][#][4]
 					#3[5][6][7]
-					exists = [true,true,true,true,true,true,true,true]
+					exists = [True, True, True, True, True, True, True, True]
 					if c_x: # if cell is near left wall e.g. x equal = 0
-						exists[0] = false
-						exists[3] = false
-						exists[5] = false
+						exists[0] = False
+						exists[3] = False
+						exists[5] = False
 					if c_y: # if y = 0
-						exists[0] = false
-						exists[1] = false
-						exists[2] = false
+						exists[0] = False
+						exists[1] = False
+						exists[2] = False
 					if c_x + 1>inp_x: # if y = 0
-						exists[2] = false
-						exists[4] = false
-						exists[7] = false
+						exists[2] = False
+						exists[4] = False
+						exists[7] = False
 					if c_y + 1>inp_y: # if
-						exists[5] = false
-						exists[6] = false
-						exists[7] = false
+						exists[5] = False
+						exists[6] = False
+						exists[7] = False
 
 					if exists[0]:
 						board[c_x - 1][c_y - 1].plus()
@@ -146,83 +143,51 @@ class Minesweeper:
 		self.board = board
 
 	def visualize_board(self):
-		pixel = {
-			13: [[0, 0, 0, 0, 0], # mine
-					[0, 0, 1, 0, 0],
-					[0, 1, 1, 1, 0],
-					[0, 0, 1, 0, 0],
-					[0, 0, 0, 0, 0]],
-			12: [[0, 0, 1, 1, 0], # flag
-					[0, 0, 1, 1, 0],
-					[0, 0, 1, 0, 0],
-					[0, 0, 1, 0, 0],
-					[0, 0, 1, 0, 0]],
-			10: [[0, 0, 0, 0, 0], # unopened
-					[0, 1, 1, 1, 0],
-					[0, 1, 0, 1, 0],
-					[0, 1, 1, 1, 0],
-					[0, 0, 0, 0, 0]],
-			0: [[0, 0, 0, 0, 0],
-					[0, 0, 0, 0, 0],
-					[0, 0, 0, 0, 0],
-					[0, 0, 0, 0, 0],
-					[0, 0, 0, 0, 0]],
-			1: [[0, 1, 1, 0, 0],
-					[0, 0, 1, 0, 0],
-					[0, 0, 1, 0, 0],
-					[0, 0, 1, 0, 0],
-					[0, 0, 1, 0, 0]],
-			2: [[0, 1, 1, 1, 0],
-					[0, 0, 0, 1, 0],
-					[0, 1, 1, 1, 0],
-					[0, 1, 0, 0, 0],
-					[0, 1, 1, 1, 0]],
-			3: [[0, 1, 1, 1, 0],
-					[0, 1, 0, 0, 0],
-					[0, 1, 1, 1, 0],
-					[0, 1, 0, 0, 0],
-					[0, 1, 1, 1, 0]],
-			4: [[0, 1, 0, 1, 0],
-					[0, 1, 0, 1, 0],
-					[0, 1, 1, 1, 0],
-					[0, 0, 0, 1, 0],
-					[0, 0, 0, 1, 0]],
-			5: [[0, 1, 1, 1, 0],
-					[0, 1, 0, 0, 0],
-					[0, 1, 1, 1, 0],
-					[0, 0, 0, 1, 0],
-					[0, 1, 1, 1, 0]],
-			6: [[0, 1, 1, 1, 0],
-					[0, 1, 0, 0, 0],
-					[0, 1, 1, 1, 0],
-					[0, 1, 0, 1, 0],
-					[0, 1, 1, 1, 0]],
-			7: [[0, 1, 1, 1, 0],
-					[0, 0, 0, 0, 1],
-					[0, 0, 0, 1, 0],
-					[0, 0, 1, 0, 0],
-					[0, 1, 0, 0, 0]],
-			8: [[0, 1, 1, 1, 0],
-					[0, 1, 0, 1, 0],
-					[0, 1, 1, 1, 0],
-					[0, 1, 0, 1, 0],
-					[0, 1, 1, 1, 0]]}
-		scale = 1
-		border = 1
+		#needed figures:
+		# closed field
+		# open empty field
+		# numbers 1-8
+		# flag
+		# mine(detonated)
+		# mine(revealed)
+		cell_size = 100
+		visual_map = Image.new('RGB', (cell_size*len(self.board[0]),cell_size*len(self.board)))#x then y ?
+
+		def draw_cell(loc_x, loc_y):
+			if self.board[loc_x][loc_y].is_open:
+				if self.board[loc_x][loc_y].is_mine:
+					pass # draw red mine
+				elif self.board[loc_x][loc_y].num.__eq__(0):
+					pass#draw empty field
+				elif self.board[loc_x][loc_y].num.__eq__(1):
+					pass#draw 1
+				elif self.board[loc_x][loc_y].num.__eq__(2):
+					pass#draw 2
+				elif self.board[loc_x][loc_y].num.__eq__(3):
+					pass#draw 3
+				elif self.board[loc_x][loc_y].num.__eq__(4):
+					pass#draw 4
+				elif self.board[loc_x][loc_y].num.__eq__(5):
+					pass#draw 5
+				elif self.board[loc_x][loc_y].num.__eq__(6):
+					pass#draw 6
+				elif self.board[loc_x][loc_y].num.__eq__(7):
+					pass#draw 7
+				elif self.board[loc_x][loc_y].num.__eq__(8):
+					pass#draw 8
+			elif self.board[loc_x][loc_y].is_marked:
+				pass #draw flag
+			else:
+				pass # draw closed field
+			pass
 
 		for line in self.board: # x ++
 			loc_x = enumerate(line)
 			for cell in line: # y ++
 				id = 11
 				loc_y = enumerate(cell)
-				if cell.is_open:
-					if cell.is_mine: #after game over only
-						id = 13
-					id = cell.num
-				elif cell.is_marked:
-					id = 12
-				else:
-					id = 10
+				draw_cell(loc_x, loc_y)
+
 				#at this point I know what cell would look like (id) and where i is (loc_x, loc_x)
 
 	def game_start(self, x: int, y: int, mines):
