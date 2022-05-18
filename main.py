@@ -17,6 +17,22 @@ cat_api_token = None
 
 enable_logging = False
 
+image_dictionary = {}
+
+query_dictionary = {}
+
+main_menu = [
+	[
+		InlineKeyboardButton("Option 1", callback_data="1"),
+		InlineKeyboardButton("Option 2", callback_data="2"),
+	],
+	[
+		InlineKeyboardButton("Get a cat", callback_data="cat"),
+		InlineKeyboardButton("Convert", callback_data="convert")
+	]
+]
+
+
 
 def gen_rand_int(min_val: int, max_val: int):
 	random.seed(datetime.now())
@@ -59,19 +75,7 @@ def roll(inp_t: str):
 
 
 # format { chat/user : image }
-image_dictionary = {}
 
-query_dictionary = {}
-main_menu = [
-	[
-		InlineKeyboardButton("Option 1", callback_data="1"),
-		InlineKeyboardButton("Option 2", callback_data="2"),
-	],
-	[
-		InlineKeyboardButton("Get a cat", callback_data="cat"),
-		InlineKeyboardButton("Convert", callback_data="convert")
-	]
-]
 
 def mtb_save_image(update: Update, context: CallbackContext):
 	mtb_bytes = bytes(context.bot.get_file(update.message.photo[-1].file_id).download_as_bytearray())
