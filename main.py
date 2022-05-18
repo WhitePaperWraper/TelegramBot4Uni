@@ -58,7 +58,8 @@ def roll(inp_t: str):
 	return result
 
 
-################## handlers go right here ############################
+# format { chat/user : image }
+image_dictionary = {}
 
 query_dictionary = {}
 main_menu = [
@@ -71,6 +72,45 @@ main_menu = [
 		InlineKeyboardButton("Convert", callback_data="convert")
 	]
 ]
+
+def mtb_save_image(update: Update, context: CallbackContext):
+	mtb_bytes = bytes(context.bot.get_file(update.message.photo[-1].file_id).download_as_bytearray())
+	image_dictionary.update({update.message.chat.id: mtb_bytes})
+	print(update.message.chat.id)
+
+
+def handle_message_other(update: Update, context: CallbackContext):
+	if update.message.document:  # download if has webp Document
+		mtb_doc = update.message.document
+		if mtb_doc.file_name[-4:].__eq__("webp"):
+			mtb_bytes = bytes(update.message.document.get_file().download_as_bytearray())
+			print(mtb_bytes)
+			image_dictionary.update({update.message.chat.id: mtb_bytes})
+		else:
+			update.message.reply_text("File type not recognized, try sending as picture")
+	message_text = update.message.text.lower()
+	if message_text.__contains__('roll'):
+		update.message.reply_text(roll(message_text))
+		return
+
+
+##############################
+
+def universal_converter(chat_id, img_type: str):
+	print(chat_id)
+	if image_dictionary.get(chat_id) is None:
+		return None
+	else:
+		mtb_bytes = BytesIO()
+		mtb_img = Image.open(BytesIO(image_dictionary.get(chat_id)))
+		mtb_img.save(mtb_bytes, format=img_type)
+		mtb_bytes.seek(0)
+		mtb_img = mtb_bytes.read()
+		return mtb_img
+################## handlers go right here ############################
+
+
+
 def start(update: Update, context: CallbackContext) -> None:
 	update.message.reply_text(
 		"Hi! I'm a prototype. Here are some commands I understand:\n"
@@ -91,19 +131,30 @@ def button(update: Update, context: CallbackContext):
 	query = update.callback_query
 	query.answer()
 	query.edit_message_text(text=f"Selected option: {query.data}")
-
 	if query.data.__eq__("cat"):
 		with urllib.request.urlopen("https://api.thecatapi.com/v1/images/search") as link:
 			response = json.loads(link.read().decode())
 		query.message.chat.send_photo(response[0]['url'])
 	if query.data.__eq__("convert"):
 		query_dictionary[query.message.chat.id] = [
-			[InlineKeyboardButton("To Png", callback_data="webp")],
+			[InlineKeyboardButton("To Png", callback_data="png")],
 			[InlineKeyboardButton("To webp", callback_data="webp")],
 			[InlineKeyboardButton("Go back", callback_data="menu")]
 			]
 	if query.data.__eq__("menu"):
 		query_dictionary[query.message.chat.id] = main_menu
+	if query.data.__eq__("png"):
+		result = universal_converter(query.message.chat.id, "png")
+		if result is None:
+			query.message.chat.send_message("No image found")
+		else:
+			query.message.chat.send_document(document=result)
+	if query.data.__eq__("webp"):
+		result = universal_converter(query.message.chat.id, "webp")
+		if result is None:
+			query.message.chat.send_message("No image found")
+		else:
+			query.message.chat.send_document(document=result)
 	reply_markup = InlineKeyboardMarkup(query_dictionary.get(query.message.chat.id))
 	query.message.chat.send_message("Please choose:", reply_markup=reply_markup)
 
@@ -130,47 +181,11 @@ def cat(update: Update, context: CallbackContext):
 ######### save/load #########
 
 
-# format { chat/user : image }
-image_dictionary = {}
 
-
-def mtb_save_image(update: Update, context: CallbackContext):
-	mtb_bytes = bytes(context.bot.get_file(update.message.photo[-1].file_id).download_as_bytearray())
-	print(mtb_bytes)
-	image_dictionary.update({update.message.chat.id: mtb_bytes})
-
-
-def handle_message_other(update: Update, context: CallbackContext):
-	if update.message.document:  # download if has webp Document
-		mtb_doc = update.message.document
-		if mtb_doc.file_name[-4:].__eq__("webp"):
-			mtb_bytes = bytes(update.message.document.get_file().download_as_bytearray())
-			print(mtb_bytes)
-			image_dictionary.update({update.message.chat.id: mtb_bytes})
-		else:
-			update.message.reply_text("File type not recognized, try sending as picture")
-	message_text = update.message.text.lower()
-	if message_text.__contains__('roll'):
-		update.message.reply_text(roll(message_text))
-		return
-
-
-##############################
-
-def universal_converter(update: Update, img_type: str):
-	if image_dictionary.get(update.message.chat.id) is None:
-		return None
-	else:
-		mtb_bytes = BytesIO()
-		mtb_img = Image.open(BytesIO(image_dictionary.get(update.message.chat.id)))
-		mtb_img.save(mtb_bytes, format=img_type)
-		mtb_bytes.seek(0)
-		mtb_img = mtb_bytes.read()
-		return mtb_img
 
 
 def to_jpg(update: Update, context: CallbackContext):
-	result = universal_converter(update, "jpeg")
+	result = universal_converter(update.message.chat.id, "jpeg")
 	if result is None:
 		update.message.reply_text("No image found")
 	else:
@@ -181,7 +196,7 @@ def to_jpg(update: Update, context: CallbackContext):
 
 
 def to_webp(update: Update, context: CallbackContext):
-	result = universal_converter(update, "webp")
+	result = universal_converter(update.message.chat.id, "webp")
 	if result is None:
 		update.message.reply_text("No image found")
 	else:
@@ -189,7 +204,7 @@ def to_webp(update: Update, context: CallbackContext):
 
 
 def to_png(update: Update, context: CallbackContext):
-	result = universal_converter(update, "png")
+	result = universal_converter(update.message.chat.id, "png")
 	if result is None:
 		update.message.reply_text("No image found")
 	else:
@@ -218,7 +233,7 @@ def handlers_setup(dispatcher: Updater.dispatcher):
 	#dispatcher.add_handler(CommandHandler("jpg", to_jpg))
 	#dispatcher.add_handler(CommandHandler("webp", to_webp))
 	dispatcher.add_handler(MessageHandler(Filters.photo & ~Filters.command, mtb_save_image))
-	#dispatcher.add_handler(MessageHandler(~Filters.command, handle_message_other))
+	dispatcher.add_handler(MessageHandler(~Filters.command, handle_message_other))
 
 
 # dispatcher.add_handler(MessageHandler(Filters.command, ))
