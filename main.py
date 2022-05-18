@@ -4,8 +4,9 @@ import tokenOfTheBot
 from datetime import datetime
 import random
 
-from telegram import Update
-from telegram.ext import Updater, CommandHandler, CallbackContext, MessageHandler, Filters
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.ext import Updater, CommandHandler, CallbackContext, MessageHandler, Filters, CallbackQueryHandler, ContextTypes
+
 from PIL import Image
 from io import BytesIO
 
@@ -59,12 +60,53 @@ def roll(inp_t: str):
 
 ################## handlers go right here ############################
 
+query_dictionary = {}
+main_menu = [
+	[
+		InlineKeyboardButton("Option 1", callback_data="1"),
+		InlineKeyboardButton("Option 2", callback_data="2"),
+	],
+	[
+		InlineKeyboardButton("Get a cat", callback_data="cat"),
+		InlineKeyboardButton("Convert", callback_data="convert")
+	]
+]
 def start(update: Update, context: CallbackContext) -> None:
 	update.message.reply_text(
 		"Hi! I'm a prototype. Here are some commands I understand:\n"
 		"1. /start - Show this message\n"
 		"2. /help - Help on usage\n0"
 		"3. /cat - for a cat")
+
+
+def st_rt(update: Update, context: CallbackContext) -> None:
+	keyboard = main_menu
+	query_dictionary.update({update.message.chat.id: keyboard})
+	reply_markup = InlineKeyboardMarkup(query_dictionary.get(update.message.chat.id))
+
+	update.message.reply_text("Please choose:", reply_markup=reply_markup)
+
+
+def button(update: Update, context: CallbackContext):
+	query = update.callback_query
+	query.answer()
+	query.edit_message_text(text=f"Selected option: {query.data}")
+
+	if query.data.__eq__("cat"):
+		with urllib.request.urlopen("https://api.thecatapi.com/v1/images/search") as link:
+			response = json.loads(link.read().decode())
+		query.message.chat.send_photo(response[0]['url'])
+	if query.data.__eq__("convert"):
+		query_dictionary[query.message.chat.id] = [
+			[InlineKeyboardButton("To Png", callback_data="webp")],
+			[InlineKeyboardButton("To webp", callback_data="webp")],
+			[InlineKeyboardButton("Go back", callback_data="menu")]
+			]
+	if query.data.__eq__("menu"):
+		query_dictionary[query.message.chat.id] = main_menu
+	reply_markup = InlineKeyboardMarkup(query_dictionary.get(query.message.chat.id))
+	query.message.chat.send_message("Please choose:", reply_markup=reply_markup)
+
 
 
 def he_p(update: Update, context: CallbackContext):
@@ -168,14 +210,15 @@ def to_png(update: Update, context: CallbackContext):
 
 
 def handlers_setup(dispatcher: Updater.dispatcher):
-	dispatcher.add_handler(CommandHandler("start", start))
-	dispatcher.add_handler(CommandHandler("help", he_p))
-	dispatcher.add_handler(CommandHandler("cat", cat))
-	dispatcher.add_handler(CommandHandler("png", to_png))
-	dispatcher.add_handler(CommandHandler("jpg", to_jpg))
-	dispatcher.add_handler(CommandHandler("webp", to_webp))
+	dispatcher.add_handler(CommandHandler("start", st_rt))
+	dispatcher.add_handler(CallbackQueryHandler(button))
+	#dispatcher.add_handler(CommandHandler("help", he_p))
+	#dispatcher.add_handler(CommandHandler("cat", cat))
+	#dispatcher.add_handler(CommandHandler("png", to_png))
+	#dispatcher.add_handler(CommandHandler("jpg", to_jpg))
+	#dispatcher.add_handler(CommandHandler("webp", to_webp))
 	dispatcher.add_handler(MessageHandler(Filters.photo & ~Filters.command, mtb_save_image))
-	dispatcher.add_handler(MessageHandler(~Filters.command, handle_message_other))
+	#dispatcher.add_handler(MessageHandler(~Filters.command, handle_message_other))
 
 
 # dispatcher.add_handler(MessageHandler(Filters.command, ))
