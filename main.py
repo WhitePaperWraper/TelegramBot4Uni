@@ -121,7 +121,7 @@ def start(update: Update, context: CallbackContext) -> None:
 
 def st_rt(update: Update, context: CallbackContext) -> None:
 	keyboard = main_menu
-	query_dictionary.update({update.message.chat.id: keyboard})
+	query_dictionary.update(query_dictionary|{update.message.chat.id: keyboard})
 	reply_markup = InlineKeyboardMarkup(query_dictionary.get(update.message.chat.id))
 
 	update.message.reply_text("Please choose:", reply_markup=reply_markup)
@@ -129,7 +129,10 @@ def st_rt(update: Update, context: CallbackContext) -> None:
 
 def button(update: Update, context: CallbackContext):
 	query = update.callback_query
+	chat_id = query.message.chat.id
 	query.answer()
+	if not query_dictionary.keys().__contains__(chat_id):
+		query_dictionary.update(query_dictionary|{chat_id: main_menu})
 	query.edit_message_text(text=f"Selected option: {query.data}")
 	if query.data.__eq__("cat"):
 		with urllib.request.urlopen("https://api.thecatapi.com/v1/images/search") as link:
@@ -142,20 +145,20 @@ def button(update: Update, context: CallbackContext):
 			[InlineKeyboardButton("Go back", callback_data="menu")]
 			]
 	if query.data.__eq__("menu"):
-		query_dictionary[query.message.chat.id] = main_menu
+		query_dictionary[chat_id] = main_menu
 	if query.data.__eq__("png"):
-		result = universal_converter(query.message.chat.id, "png")
+		result = universal_converter(chat_id, "png")
 		if result is None:
 			query.message.chat.send_message("No image found")
 		else:
 			query.message.chat.send_document(document=result)
 	if query.data.__eq__("webp"):
-		result = universal_converter(query.message.chat.id, "webp")
+		result = universal_converter(chat_id, "webp")
 		if result is None:
 			query.message.chat.send_message("No image found")
 		else:
 			query.message.chat.send_document(document=result)
-	reply_markup = InlineKeyboardMarkup(query_dictionary.get(query.message.chat.id))
+	reply_markup = InlineKeyboardMarkup(query_dictionary.get(chat_id))
 	query.message.chat.send_message("Please choose:", reply_markup=reply_markup)
 
 
