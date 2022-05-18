@@ -153,42 +153,37 @@ class Minesweeper:
 		cell_size = 100
 		visual_map = Image.new('RGB', (cell_size*len(self.board[0]),cell_size*len(self.board)))#x then y ?
 
-		def draw_cell(loc_x, loc_y):
-			if self.board[loc_x][loc_y].is_open:
-				if self.board[loc_x][loc_y].is_mine:
+		def draw_cell(i_loc_x, i_loc_y):
+			if self.board[i_loc_x][i_loc_y].is_open:
+				#draw open field
+				if self.board[i_loc_x][i_loc_y].is_mine:
 					pass # draw red mine
-				elif self.board[loc_x][loc_y].num.__eq__(0):
+				elif self.board[i_loc_x][i_loc_y].num.__eq__(0):
 					pass#draw empty field
-				elif self.board[loc_x][loc_y].num.__eq__(1):
+				elif self.board[i_loc_x][i_loc_y].num.__eq__(1):
 					pass#draw 1
-				elif self.board[loc_x][loc_y].num.__eq__(2):
+				elif self.board[i_loc_x][i_loc_y].num.__eq__(2):
 					pass#draw 2
-				elif self.board[loc_x][loc_y].num.__eq__(3):
+				elif self.board[i_loc_x][i_loc_y].num.__eq__(3):
 					pass#draw 3
-				elif self.board[loc_x][loc_y].num.__eq__(4):
+				elif self.board[i_loc_x][i_loc_y].num.__eq__(4):
 					pass#draw 4
-				elif self.board[loc_x][loc_y].num.__eq__(5):
+				elif self.board[i_loc_x][i_loc_y].num.__eq__(5):
 					pass#draw 5
-				elif self.board[loc_x][loc_y].num.__eq__(6):
+				elif self.board[i_loc_x][i_loc_y].num.__eq__(6):
 					pass#draw 6
-				elif self.board[loc_x][loc_y].num.__eq__(7):
+				elif self.board[i_loc_x][i_loc_y].num.__eq__(7):
 					pass#draw 7
-				elif self.board[loc_x][loc_y].num.__eq__(8):
+				elif self.board[i_loc_x][i_loc_y].num.__eq__(8):
 					pass#draw 8
-			elif self.board[loc_x][loc_y].is_marked:
+			elif self.board[i_loc_x][i_loc_y].is_marked:
 				pass #draw flag
 			else:
 				pass # draw closed field
-			pass
 
-		for line in self.board: # x ++
-			loc_x = enumerate(line)
-			for cell in line: # y ++
-				id = 11
-				loc_y = enumerate(cell)
+		for loc_x, line in enumerate(self.board): # x ++
+			for loc_y, cell in enumerate(line): # y ++
 				draw_cell(loc_x, loc_y)
-
-				#at this point I know what cell would look like (id) and where i is (loc_x, loc_x)
 
 	def game_start(self, x: int, y: int, mines):
 		self.generate_board(x, y, mines)
