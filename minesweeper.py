@@ -151,8 +151,11 @@ class Minesweeper:
 		# mine(detonated)
 		# mine(revealed)
 		cell_size = 100
-		visual_map = Image.new('RGB', (cell_size*len(self.board[0]),cell_size*len(self.board)))#x then y ?
-
+		board_width = cell_size * len(self.board[0])
+		board_length = cell_size*len(self.board)
+		visual_map = Image.new('RGB', (board_width, board_length))#x then y ?
+		board = ImageDraw.Draw(visual_map)
+		board.rectangle([0, 0, board_width, board_length], fill=[150, 150, 150], width=0)
 		def draw_cell(i_loc_x, i_loc_y):
 			if self.board[i_loc_x][i_loc_y].is_open:
 				#draw open field
