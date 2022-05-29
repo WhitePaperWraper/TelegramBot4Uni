@@ -24,12 +24,12 @@ query_dictionary = {}
 
 main_menu = [
 	[
-		InlineKeyboardButton("Option 1", callback_data="1"),
-		InlineKeyboardButton("Quote", callback_data="quote"),
+		InlineKeyboardButton("Кошка", callback_data="cat"),
+		InlineKeyboardButton("Цитата", callback_data="quote"),
 	],
 	[
-		InlineKeyboardButton("Get a cat", callback_data="cat"),
-		InlineKeyboardButton("Convert", callback_data="convert")
+		InlineKeyboardButton("Помощь по к.", callback_data="help"),
+		InlineKeyboardButton("Конвертация", callback_data="convert")
 	]
 ]
 
@@ -170,11 +170,14 @@ def button(update: Update, context: CallbackContext):
 		payload = {'method': 'getQuote', 'format': 'json', 'lang': 'ru'}
 		url = "https://api.forismatic.com/api/1.0"
 		urlother = "https://api.forismatic.com/api/1.0/?method=getQuote&format=json&lang=ru"
-		req = urllib.request.Request(urlother, headers={'User-Agent': "Magic Browser"})
+		req = urllib.request.Request(urlother, headers={'User-Agent': "a"})
 		with urllib.request.urlopen(req) as link:
 			response = json.loads(link.read().decode())
 			print(response)
 		query.message.chat.send_message(text = response['quoteText']+"\n\n"+response["quoteAuthor"])
+	if query.data.__eq__("help"):
+		query.message.reply_text("Шаги по конвертации фото:\n\n1:загрузите фото в чат, \n(попробуйте загрузку как фото и как фаил)\n\n2:Нажмите кнопку конвертации и выберите формат:png или webp\n")
+		query.message.reply_text("Фото сохраняются в RAM до перезапуска бота, и должны быть привязаны к одному чату, одно фото на чат\n(Но может быть баговано)\nОпция может не работать если на сервере кончилась доступная RA")
 	reply_markup = InlineKeyboardMarkup(query_dictionary.get(chat_id))
 	query.message.chat.send_message("Please choose:", reply_markup=reply_markup)
 
