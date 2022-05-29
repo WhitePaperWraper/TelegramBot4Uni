@@ -1,21 +1,22 @@
+import json
 import logging
-import tokenOfTheBot
-
-from datetime import datetime
 import random
-
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import Updater, CommandHandler, CallbackContext, MessageHandler, Filters, CallbackQueryHandler, ContextTypes
-
-from PIL import Image
+import urllib.parse
+import urllib.request
+from datetime import datetime
 from io import BytesIO
 
-import urllib.request, json
+from PIL import Image
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.ext import Updater, CommandHandler, CallbackContext, MessageHandler, Filters, CallbackQueryHandler
+
+import tokenOfTheBot
 
 t_o_k_e_n = None
 cat_api_token = None
 
 enable_logging = False
+ram_economy = False
 
 image_dictionary = {}
 
@@ -24,7 +25,7 @@ query_dictionary = {}
 main_menu = [
 	[
 		InlineKeyboardButton("Option 1", callback_data="1"),
-		InlineKeyboardButton("Option 2", callback_data="2"),
+		InlineKeyboardButton("Quote", callback_data="quote"),
 	],
 	[
 		InlineKeyboardButton("Get a cat", callback_data="cat"),
@@ -78,9 +79,12 @@ def roll(inp_t: str):
 
 
 def mtb_save_image(update: Update, context: CallbackContext):
-	mtb_bytes = bytes(context.bot.get_file(update.message.photo[-1].file_id).download_as_bytearray())
-	image_dictionary.update({update.message.chat.id: mtb_bytes})
-	print(update.message.chat.id)
+	if not ram_economy:
+		mtb_bytes = bytes(context.bot.get_file(update.message.photo[-1].file_id).download_as_bytearray())
+		image_dictionary.update({update.message.chat.id: mtb_bytes})
+		print(update.message.chat.id)
+	else:
+		update.message.reply_text("Image conversion is disabled right now for RAM economy")
 
 
 def handle_message_other(update: Update, context: CallbackContext):
@@ -162,6 +166,15 @@ def button(update: Update, context: CallbackContext):
 			query.message.chat.send_message("No image found")
 		else:
 			query.message.chat.send_document(document=result)
+	if query.data.__eq__("quote"):
+		payload = {'method': 'getQuote', 'format': 'json', 'lang': 'ru'}
+		url = "https://api.forismatic.com/api/1.0"
+		urlother = "https://api.forismatic.com/api/1.0/?method=getQuote&format=json&lang=ru"
+		req = urllib.request.Request(urlother, headers={'User-Agent': "Magic Browser"})
+		with urllib.request.urlopen(req) as link:
+			response = json.loads(link.read().decode())
+			print(response)
+		query.message.chat.send_message(text = response['quoteText']+"\n\n"+response["quoteAuthor"])
 	reply_markup = InlineKeyboardMarkup(query_dictionary.get(chat_id))
 	query.message.chat.send_message("Please choose:", reply_markup=reply_markup)
 
